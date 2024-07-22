@@ -2,6 +2,11 @@ import fs from "fs";
 import path from "path";
 import glob from "glob";
 import { posixNormalize } from "../src/utils/filePath";
+import { fileURLToPath } from 'url';
+
+// Получение текущего каталога в ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Pack func
 const wasmBase64 = fs
@@ -17,13 +22,12 @@ fs.writeFileSync(
 
 // Pack stdlib
 const stdlibFiles = glob.sync(
-    path.resolve(__dirname, "..", "stdlib", "**", "*.@(tact|fc)"),
+    path.resolve(__dirname, "..", "stdlib", "**", "*.{tact,fc}"),
     { windowsPathsNoEscape: true },
 );
 const dirPrefixToRemove =
     posixNormalize(path.resolve(__dirname, "..", "stdlib")) + "/"; // Remove also the leading slash
-let output: string = "";
-output = "const files: Record<string, string> = {};\n";
+let output = "const files: Record<string, string> = {};\n";
 for (const f of stdlibFiles) {
     let code = fs.readFileSync(f).toString("base64");
     const name = f.replace(dirPrefixToRemove, "");
